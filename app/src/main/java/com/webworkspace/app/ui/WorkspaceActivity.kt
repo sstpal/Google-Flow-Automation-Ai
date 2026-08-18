@@ -52,7 +52,7 @@ class WorkspaceActivity : AppCompatActivity() {
         const val EXTRA_DESKTOP_MODE = "desktop_mode"
         private const val FILE_CHOOSER_REQUEST_CODE = 1001
         
-        private const val DESKTOP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        private const val DESKTOP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0"
         private const val MOBILE_USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
     }
 
@@ -99,10 +99,9 @@ class WorkspaceActivity : AppCompatActivity() {
         
         container.addView(webView)
         
-        // Strip WebView markers from the default user agent to bypass Google's "browser not secure" block
-        safeMobileUserAgent = webView.settings.userAgentString
-            .replace("; wv", "")
-            .replace(Regex("Version/[0-9.]+\\s"), "")
+        // Using Firefox User-Agent is the most reliable way to bypass Google's 'browser not secure' block in Android WebView
+        // because Google does not apply the Chrome-specific X-Requested-With header checks to Firefox.
+        safeMobileUserAgent = "Mozilla/5.0 (Android 14; Mobile; rv:109.0) Gecko/114.0 Firefox/114.0"
         
         webView.settings.apply {
             javaScriptEnabled = true
