@@ -105,8 +105,8 @@ class WorkspaceActivity : AppCompatActivity() {
     }
 
     private fun saveLastVisitedUrl(url: String) {
-        // Only save valid URLs that the user is visiting
-        if (url.startsWith("http")) {
+        // Only save valid Flow AI project URLs that the user is visiting
+        if (url.startsWith("http") && url.contains("labs.google/fx/tools/flow")) {
             lifecycleScope.launch {
                 val profile = database.profileDao().getProfileById(currentProfileId)
                 if (profile != null && profile.lastVisitedUrl != url) {
@@ -120,6 +120,10 @@ class WorkspaceActivity : AppCompatActivity() {
         btnDesktopToggle.setImageResource(R.drawable.ic_desktop)
         btnDesktopToggle.setOnClickListener {
             Toast.makeText(this, "Desktop mode is always on for full features.", Toast.LENGTH_SHORT).show()
+        }
+
+        findViewById<ImageButton>(R.id.btnHome).setOnClickListener {
+            geckoSession.loadUri("https://labs.google/fx/tools/flow")
         }
 
         findViewById<ImageButton>(R.id.btnReload).setOnClickListener {

@@ -50,6 +50,14 @@
                     android:contentDescription="Forward" />
 
                 <ImageButton
+                    android:id="@+id/btnHome"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_home"
+                    android:contentDescription="Home" />
+
+                <ImageButton
                     android:id="@+id/btnReload"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
