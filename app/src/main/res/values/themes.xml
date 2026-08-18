@@ -4,7 +4,7 @@
     <style name="Base.Theme.WebWorkspace" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- NexaFlow Modern Color Palette -->
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primaryDark</item>
+        <item name="colorPrimaryContainer">@color/primaryDark</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorOnSecondary">@color/white</item>
