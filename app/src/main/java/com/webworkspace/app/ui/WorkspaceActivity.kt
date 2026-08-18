@@ -76,7 +76,6 @@ class WorkspaceActivity : AppCompatActivity() {
         
         if (geckoRuntime == null) {
             val settings = GeckoRuntimeSettings.Builder()
-                .javaScriptEnabled(true)
                 .build()
             geckoRuntime = GeckoRuntime.create(this, settings)
         }
