@@ -87,10 +87,7 @@ class MainActivity : AppCompatActivity() {
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> {
-                        android.webkit.WebStorage.getInstance().deleteAllData()
-                        android.webkit.CookieManager.getInstance().removeAllCookies(null)
-                        android.webkit.CookieManager.getInstance().flush()
-                        android.widget.Toast.makeText(this, "Cache and Global Cookies Cleared.", android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(this, "WebView Cache Cleared. GeckoView data is managed per-profile.", android.widget.Toast.LENGTH_SHORT).show()
                     }
                     1 -> {
                         lifecycleScope.launch {

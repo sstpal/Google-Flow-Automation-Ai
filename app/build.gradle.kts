@@ -28,11 +28,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         viewBinding = true
@@ -45,8 +45,11 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
-    // WebKit for ProfileStore and Multi-Profile support
-    implementation("androidx.webkit:webkit:1.12.0") 
+    // GeckoView for ultimate browser engine
+    implementation("org.mozilla.geckoview:geckoview:114.0.20230608102324") // Using a widely available stable version
+
+    // WebKit (kept for reference or removal later)
+    implementation("androidx.webkit:webkit:1.12.0")
 
     // Room Database for Profiles
     val room_version = "2.6.1"
