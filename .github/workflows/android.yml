@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v7
@@ -42,7 +44,7 @@ jobs:
 
     - name: Create GitHub Release for Auto-Update
       if: success()
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: v1.${{ github.run_number }}
         name: NexaFlow Update v1.${{ github.run_number }}
