@@ -14,6 +14,7 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.WebSettings
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
