@@ -220,11 +220,11 @@ class WorkspaceActivity : AppCompatActivity() {
     private fun updateDesktopMode() {
         if (isDesktopMode) {
             webView.settings.userAgentString = DESKTOP_USER_AGENT
-            btnDesktopToggle.setImageResource(android.R.drawable.ic_menu_desktop)
+            btnDesktopToggle.setImageResource(R.drawable.ic_desktop)
         } else {
             // Revert to default mobile user agent
             webView.settings.userAgentString = WebSettings.getDefaultUserAgent(this)
-            btnDesktopToggle.setImageResource(android.R.drawable.ic_menu_sort_by_size) // Placeholder for mobile icon
+            btnDesktopToggle.setImageResource(R.drawable.ic_mobile)
         }
     }
     

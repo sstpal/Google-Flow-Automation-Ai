@@ -63,7 +63,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_menu_desktop"
+                    android:src="@drawable/ic_desktop"
                     android:contentDescription="Desktop Toggle" />
             </LinearLayout>
         </com.google.android.material.appbar.MaterialToolbar>
