@@ -10,5 +10,6 @@ data class Profile(
     val name: String,
     val isDesktopMode: Boolean = true,
     val lastUsedTimestamp: Long = System.currentTimeMillis(),
-    val hasSession: Boolean = false // We can update this based on cookie presence if needed
+    val hasSession: Boolean = false,
+    val lastVisitedUrl: String? = null // We can update this based on cookie presence if needed
 )

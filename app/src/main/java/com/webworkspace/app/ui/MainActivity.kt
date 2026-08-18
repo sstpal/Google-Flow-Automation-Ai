@@ -30,8 +30,13 @@ class MainActivity : AppCompatActivity() {
         
         adapter = ProfileAdapter(
             onPlayClick = { profile ->
-                // Play -> Opens Flow in Desktop mode
-                openWorkspace(profile, "https://flow.google.com/", true)
+                // Play -> Resume last visited URL or open Flow default
+                val url = profile.lastVisitedUrl ?: "https://flow.google.com/"
+                openWorkspace(profile, url, true)
+            },
+            onNewSessionClick = { profile ->
+                // New Session -> Force open a new Flow project
+                openWorkspace(profile, "https://flow.google.com/new", true)
             },
             onCustomizeClick = { profile ->
                 // Customization -> Opens Google accounts login

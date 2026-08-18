@@ -124,6 +124,9 @@ class WorkspaceActivity : AppCompatActivity() {
                 CookieManager.getInstance().getCookie(url)?.let {
                     if (it.isNotEmpty()) updateProfileSessionStatus(true)
                 }
+                url?.let {
+                    saveLastVisitedUrl(it)
+                }
             }
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 if (request?.isForMainFrame == true) {
@@ -167,6 +170,15 @@ class WorkspaceActivity : AppCompatActivity() {
             val profile = database.profileDao().getProfileById(currentProfileId)
             if (profile != null && profile.hasSession != hasSession) {
                 database.profileDao().updateProfile(profile.copy(hasSession = hasSession))
+            }
+        }
+    }
+
+    private fun saveLastVisitedUrl(url: String) {
+        lifecycleScope.launch {
+            val profile = database.profileDao().getProfileById(currentProfileId)
+            if (profile != null && profile.lastVisitedUrl != url) {
+                database.profileDao().updateProfile(profile.copy(lastVisitedUrl = url))
             }
         }
     }
