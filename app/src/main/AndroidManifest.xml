@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Necessary for file uploads / downloads via Storage Access Framework (SAF) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    
+    <!-- We don't request WRITE_EXTERNAL_STORAGE as we will use SAF / MediaStore for downloads on modern Android -->
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.WebWorkspace"
+        tools:targetApi="31">
+        
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <!-- Workspace Activity (where WebView lives). No history to allow proper back navigation, or let it have history.
+             We will manage it manually or just let it stack if we want. It's better to launch it as singleTask or standard. -->
+        <activity
+            android:name=".ui.WorkspaceActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@style/Theme.WebWorkspace.NoActionBar" />
+            
+    </application>
+
+</manifest>

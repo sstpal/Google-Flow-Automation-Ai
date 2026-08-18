@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Web Workspace</string>
+    <string name="title_profiles">Flow Workspace</string>
+    <string name="action_add_profile">+ Add Profile</string>
+    <string name="action_settings">Settings</string>
+    <string name="status_session_available">● Session available</string>
+    <string name="status_not_logged_in">○ Not logged in</string>
+    <string name="dialog_title_add_profile">Add New Profile</string>
+    <string name="profile_name_hint">Profile Name (e.g. Work Account)</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="desktop_mode_on">Desktop View</string>
+    <string name="desktop_mode_off">Mobile View</string>
+    <string name="error_loading">Unable to load the website. Check your internet connection and try again.</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_back_to_profiles">Back to Profiles</string>
+</resources>
