@@ -41,6 +41,7 @@ class WorkspaceActivity : AppCompatActivity() {
     private var currentProfileName: String = ""
     private var targetUrl: String = ""
     private var isDesktopMode: Boolean = true
+    private var safeMobileUserAgent: String = ""
     
     private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
 
@@ -98,6 +99,11 @@ class WorkspaceActivity : AppCompatActivity() {
         
         container.addView(webView)
         
+        // Strip WebView markers from the default user agent to bypass Google's "browser not secure" block
+        safeMobileUserAgent = webView.settings.userAgentString
+            .replace("; wv", "")
+            .replace(Regex("Version/[0-9.]+\\s"), "")
+        
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -117,7 +123,21 @@ class WorkspaceActivity : AppCompatActivity() {
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                return false // Keep all links inside the app
+                val urlString = request?.url?.toString() ?: return false
+                if (urlString.startsWith("http://") || urlString.startsWith("https://")) {
+                    return false // Let WebView load the page
+                }
+                // Handle intent:// and other custom schemes
+                try {
+                    val intent = Intent.parseUri(urlString, Intent.URI_INTENT_SCHEME)
+                    if (intent != null) {
+                        view?.context?.startActivity(intent)
+                        return true
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                return false
             }
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 progressBar.visibility = View.VISIBLE
@@ -208,7 +228,7 @@ class WorkspaceActivity : AppCompatActivity() {
             webView.settings.userAgentString = DESKTOP_USER_AGENT
             btnDesktopToggle.setImageResource(R.drawable.ic_desktop)
         } else {
-            webView.settings.userAgentString = MOBILE_USER_AGENT
+            webView.settings.userAgentString = safeMobileUserAgent
             btnDesktopToggle.setImageResource(R.drawable.ic_mobile)
         }
     }
