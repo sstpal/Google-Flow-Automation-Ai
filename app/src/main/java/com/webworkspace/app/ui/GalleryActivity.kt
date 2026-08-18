@@ -35,7 +35,6 @@ class GalleryActivity : AppCompatActivity() {
 
         val toolbar = findViewById<MaterialToolbar>(R.id.galleryToolbar)
         toolbar.title = "FlowMedia Gallery"
-        toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
         toolbar.setNavigationOnClickListener { finish() }
 
         rvGallery = findViewById(R.id.rvGallery)
