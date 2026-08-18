@@ -69,8 +69,12 @@ class MainActivity : AppCompatActivity() {
         )
         recyclerView.adapter = adapter
 
+        findViewById<ExtendedFloatingActionButton>(R.id.fabGallery).setOnClickListener {
+            startActivity(Intent(this, GalleryActivity::class.java))
+        }
+
         findViewById<ExtendedFloatingActionButton>(R.id.fabAddProfile).setOnClickListener {
-            showAddProfileDialog()
+            checkAndFetchAccounts()
         }
 
         lifecycleScope.launch {
@@ -89,6 +93,60 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
+    }
+
+    private fun checkAndFetchAccounts() {
+        if (checkSelfPermission(android.Manifest.permission.GET_ACCOUNTS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            showAccountSelectionDialog()
+        } else {
+            requestPermissions(arrayOf(android.Manifest.permission.GET_ACCOUNTS), 1001)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1001 && grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            showAccountSelectionDialog()
+        } else {
+            // Fallback to manual entry
+            showAddProfileDialog()
+        }
+    }
+
+    private fun showAccountSelectionDialog() {
+        val am = android.accounts.AccountManager.get(this)
+        val accounts = am.accounts.filter { android.util.Patterns.EMAIL_ADDRESS.matcher(it.name).matches() }
+            .map { it.name }.distinct().toTypedArray()
+
+        if (accounts.isEmpty()) {
+            showAddProfileDialog() // Fallback if no accounts found
+            return
+        }
+
+        val options = arrayOf("Enter manually...") + accounts
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Select Google Account for Profile")
+            .setItems(options) { _, which ->
+                if (which == 0) {
+                    showAddProfileDialog()
+                } else {
+                    val email = options[which]
+                    val profileName = email.substringBefore("@")
+                    lifecycleScope.launch {
+                        // Check if exists
+                        val existing = database.profileDao().getAllProfiles().first().find { it.name == profileName }
+                        if (existing == null) {
+                            database.profileDao().insertProfile(Profile(name = profileName))
+                            android.widget.Toast.makeText(this@MainActivity, "Profile created for $email!", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            android.widget.Toast.makeText(this@MainActivity, "Profile already exists.", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
     private fun showSettingsDialog() {

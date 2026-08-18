@@ -9,6 +9,7 @@
     
     <!-- Permission to install updates from within the app -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
     <!-- We don't request WRITE_EXTERNAL_STORAGE as we will use SAF / MediaStore for downloads on modern Android -->
 
@@ -31,6 +32,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name=".ui.GalleryActivity"
+            android:exported="false"
+            android:label="Flow Gallery"
+            android:theme="@style/Theme.WebWorkspace.NoActionBar" />
         
         <!-- Workspace Activity (where WebView lives). No history to allow proper back navigation, or let it have history.
              We will manage it manually or just let it stack if we want. It's better to launch it as singleTask or standard. -->

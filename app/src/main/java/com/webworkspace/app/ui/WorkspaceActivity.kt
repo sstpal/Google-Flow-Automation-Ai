@@ -151,7 +151,6 @@ class WorkspaceActivity : AppCompatActivity() {
             "resource://android/assets/downloader",
             "downloader@webworkspace.com"
         )
-        
         extensionResult.accept({ extension ->
             extension?.setMessageDelegate(object : org.mozilla.geckoview.WebExtension.MessageDelegate {
                 override fun onConnect(port: org.mozilla.geckoview.WebExtension.Port) {
@@ -162,7 +161,8 @@ class WorkspaceActivity : AppCompatActivity() {
                                 if (action == "long_press_media") {
                                     val url = message.optString("url")
                                     val type = message.optString("type")
-                                    runOnUiThread { showDownloadDialog(url, type) }
+                                    val isBlob = message.optBoolean("isBlob", false)
+                                    runOnUiThread { showDownloadDialog(url, type, isBlob) }
                                 }
                             }
                         }
@@ -173,41 +173,68 @@ class WorkspaceActivity : AppCompatActivity() {
         }, { e -> e?.printStackTrace() })
     }
 
-    private fun showDownloadDialog(url: String, type: String) {
+    private fun showDownloadDialog(url: String, type: String, isBlob: Boolean) {
         val title = if (type == "video") "Download Video" else "Download Image"
-        val options = arrayOf("High Quality (Original)", "Standard Quality")
+        val options = arrayOf("High Quality (Original)")
         
         com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
             .setTitle(title)
             .setItems(options) { _, _ ->
-                downloadMedia(url, type)
-            }
-            .setNeutralButton("Download All (Auto)") { _, _ ->
-                downloadMedia(url, type)
-                Toast.makeText(this, "Batch downloading started...", Toast.LENGTH_SHORT).show()
+                downloadMedia(url, type, isBlob)
             }
             .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
-    private fun downloadMedia(url: String, type: String) {
+    private fun downloadMedia(url: String, type: String, isBlob: Boolean) {
         try {
-            val request = android.app.DownloadManager.Request(android.net.Uri.parse(url))
-            request.setTitle("Flow AI Media")
-            request.setDescription("Downloading $type...")
-            request.setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            
             val ext = if (type == "video") "mp4" else "jpg"
             val filename = "FlowMedia_${System.currentTimeMillis()}.$ext"
-            request.setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS, filename)
-            
-            val dm = getSystemService(android.content.Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
-            dm.enqueue(request)
-            
-            Toast.makeText(this, "Download started!", Toast.LENGTH_SHORT).show()
+
+            if (isBlob) {
+                // Handle Base64 Data URI
+                val base64String = url.substringAfter(",")
+                val decodedBytes = android.util.Base64.decode(base64String, android.util.Base64.DEFAULT)
+                saveToMediaStore(decodedBytes, filename, type)
+            } else {
+                // Standard HTTP Download
+                val request = android.app.DownloadManager.Request(android.net.Uri.parse(url))
+                request.setTitle("Flow AI Media")
+                request.setDescription("Downloading $type...")
+                request.setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                request.setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS, filename)
+                
+                val dm = getSystemService(android.content.Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
+                dm.enqueue(request)
+                Toast.makeText(this, "Download started!", Toast.LENGTH_SHORT).show()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "Download failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun saveToMediaStore(data: ByteArray, filename: String, type: String) {
+        val resolver = contentResolver
+        val contentValues = android.content.ContentValues().apply {
+            put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
+            put(android.provider.MediaStore.MediaColumns.MIME_TYPE, if (type == "video") "video/mp4" else "image/jpeg")
+            put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS)
+        }
+
+        val uri = resolver.insert(
+            if (type == "video") android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI 
+            else android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, 
+            contentValues
+        )
+
+        if (uri != null) {
+            resolver.openOutputStream(uri)?.use { outputStream ->
+                outputStream.write(data)
+                Toast.makeText(this, "Saved to Gallery!", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(this, "Failed to save media.", Toast.LENGTH_SHORT).show()
         }
     }
 }

@@ -56,6 +56,20 @@
         tools:listitem="@layout/item_profile" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabGallery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:layout_marginBottom="16dp"
+        android:text="Gallery"
+        android:textColor="?attr/colorOnPrimary"
+        app:backgroundTint="#FF9800"
+        app:icon="@android:drawable/ic_menu_gallery"
+        app:iconTint="?attr/colorOnPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/fabAddProfile"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddProfile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
