@@ -40,6 +40,15 @@ jobs:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
 
+    - name: Create GitHub Release for Auto-Update
+      if: success()
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v1.${{ github.run_number }}
+        name: NexaFlow Update v1.${{ github.run_number }}
+        body: "Auto-generated update"
+        files: app/build/outputs/apk/debug/app-debug.apk
+
     - name: Check build result
       run: |
         if grep -q "BUILD SUCCESSFUL" build_output.log; then

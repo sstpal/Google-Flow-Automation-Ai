@@ -48,6 +48,13 @@ class ProfileAdapter(
             btnNewSession.setOnClickListener { onNewSessionClick(profile) }
             btnCustomize.setOnClickListener { onCustomizeClick(profile) }
             btnDelete.setOnClickListener { onDeleteClick(profile) }
+            
+            // Allow editing profile name by clicking on the name itself
+            tvProfileName.setOnClickListener { 
+                if (itemView.context is MainActivity) {
+                    (itemView.context as MainActivity).showEditProfileDialog(profile)
+                }
+            }
         }
     }
 }

@@ -192,6 +192,27 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    fun showEditProfileDialog(profile: Profile) {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_profile, null)
+        val etProfileName = view.findViewById<TextInputEditText>(R.id.etProfileName)
+        etProfileName.setText(profile.name)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Edit Profile Name")
+            .setView(view)
+            .setPositiveButton(R.string.action_save) { _, _ ->
+                val newName = etProfileName.text?.toString()?.trim()
+                if (!newName.isNullOrEmpty() && newName != profile.name) {
+                    lifecycleScope.launch {
+                        val updatedProfile = profile.copy(name = newName)
+                        database.profileDao().updateProfile(updatedProfile)
+                    }
+                }
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
+    }
+
     private fun openWorkspace(profile: Profile, targetUrl: String, forceDesktop: Boolean) {
         lifecycleScope.launch {
             val updated = profile.copy(lastUsedTimestamp = System.currentTimeMillis())
