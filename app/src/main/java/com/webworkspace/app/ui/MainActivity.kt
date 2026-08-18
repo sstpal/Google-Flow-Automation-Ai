@@ -3,7 +3,6 @@ package com.webworkspace.app.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,19 +29,25 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         
         adapter = ProfileAdapter(
-            onProfileClick = { profile ->
-                // Update last used timestamp
-                lifecycleScope.launch {
-                    val updated = profile.copy(lastUsedTimestamp = System.currentTimeMillis())
-                    database.profileDao().updateProfile(updated)
-                    openWorkspace(updated)
-                }
+            onPlayClick = { profile ->
+                // Play -> Opens Flow in Desktop mode
+                openWorkspace(profile, "https://flow.google.com/", true)
+            },
+            onCustomizeClick = { profile ->
+                // Customization -> Opens Google accounts login
+                openWorkspace(profile, "https://accounts.google.com/", false)
             },
             onDeleteClick = { profile ->
-                lifecycleScope.launch {
-                    database.profileDao().deleteProfile(profile)
-                    // TODO: Also delete ProfileStore data if necessary, but ProfileStore API is accessed in WorkspaceActivity
-                }
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.action_delete)
+                    .setMessage("Are you sure you want to delete profile: ${profile.name}?")
+                    .setPositiveButton(R.string.action_delete) { _, _ ->
+                        lifecycleScope.launch {
+                            database.profileDao().deleteProfile(profile)
+                        }
+                    }
+                    .setNegativeButton(R.string.action_cancel, null)
+                    .show()
             }
         )
         recyclerView.adapter = adapter
@@ -78,11 +83,17 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun openWorkspace(profile: Profile) {
+    private fun openWorkspace(profile: Profile, targetUrl: String, forceDesktop: Boolean) {
+        lifecycleScope.launch {
+            val updated = profile.copy(lastUsedTimestamp = System.currentTimeMillis())
+            database.profileDao().updateProfile(updated)
+        }
+        
         val intent = Intent(this, WorkspaceActivity::class.java).apply {
             putExtra(WorkspaceActivity.EXTRA_PROFILE_ID, profile.id)
             putExtra(WorkspaceActivity.EXTRA_PROFILE_NAME, profile.name)
-            putExtra(WorkspaceActivity.EXTRA_DESKTOP_MODE, profile.isDesktopMode)
+            putExtra(WorkspaceActivity.EXTRA_TARGET_URL, targetUrl)
+            putExtra(WorkspaceActivity.EXTRA_DESKTOP_MODE, forceDesktop)
         }
         startActivity(intent)
     }
