@@ -86,7 +86,7 @@ class WorkspaceActivity : AppCompatActivity() {
         geckoSession = GeckoSession(sessionSettings)
         
         geckoSession.progressDelegate = object : GeckoSession.ProgressDelegate {
-            override fun onPageStart(session: GeckoSession, url: String?) {
+            override fun onPageStart(session: GeckoSession, url: String) {
                 progressBar.visibility = View.VISIBLE
             }
             override fun onPageStop(session: GeckoSession, success: Boolean) {
