@@ -13,13 +13,12 @@ import com.webworkspace.app.data.AppDatabase
 import kotlinx.coroutines.launch
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
-import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.GeckoView
 
 class WorkspaceActivity : AppCompatActivity() {
 
     private lateinit var geckoView: GeckoView
-    private lateinit var geckoSession: GeckoSession
+    private val geckoSession = GeckoSession()
     private lateinit var progressBar: ProgressBar
     private lateinit var btnDesktopToggle: ImageButton
     private lateinit var tvWorkspaceProfileName: TextView
@@ -37,14 +36,6 @@ class WorkspaceActivity : AppCompatActivity() {
         const val EXTRA_DESKTOP_MODE = "desktop_mode"
 
         private var sRuntime: GeckoRuntime? = null
-
-        @Synchronized
-        fun getRuntime(context: android.content.Context): GeckoRuntime {
-            if (sRuntime == null) {
-                sRuntime = GeckoRuntime.create(context.applicationContext)
-            }
-            return sRuntime!!
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,18 +68,15 @@ class WorkspaceActivity : AppCompatActivity() {
         geckoView = GeckoView(this)
         container.addView(geckoView)
 
-        val runtime = getRuntime(this)
+        if (sRuntime == null) {
+            sRuntime = GeckoRuntime.create(this)
+        }
 
-        // contextId creates a completely isolated cookie/storage jar per profile
-        val sessionSettings = GeckoSessionSettings.Builder()
-            .usePrivateMode(false)
-            .userAgentMode(GeckoSessionSettings.USER_AGENT_MODE_DESKTOP)
-            .viewportMode(GeckoSessionSettings.VIEWPORT_MODE_DESKTOP)
-            .build()
+        // Force desktop user agent
+        geckoSession.settings.userAgentMode = org.mozilla.geckoview.GeckoSessionSettings.USER_AGENT_MODE_DESKTOP
+        geckoSession.settings.viewportMode = org.mozilla.geckoview.GeckoSessionSettings.VIEWPORT_MODE_DESKTOP
 
-        geckoSession = GeckoSession(sessionSettings)
-
-        geckoSession.open(runtime)
+        geckoSession.open(sRuntime!!)
         geckoView.setSession(geckoSession)
 
         geckoSession.loadUri(targetUrl)
