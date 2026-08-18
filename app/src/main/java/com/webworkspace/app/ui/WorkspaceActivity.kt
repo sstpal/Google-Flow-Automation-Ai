@@ -169,9 +169,14 @@ class WorkspaceActivity : AppCompatActivity() {
                 fileChooserCallback = filePathCallback
 
                 val intent = fileChooserParams?.createIntent()
-                try {
-                    startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
-                } catch (e: Exception) {
+                if (intent != null) {
+                    try {
+                        startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
+                    } catch (e: Exception) {
+                        fileChooserCallback = null
+                        return false
+                    }
+                } else {
                     fileChooserCallback = null
                     return false
                 }

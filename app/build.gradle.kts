@@ -46,7 +46,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
     // WebKit for ProfileStore and Multi-Profile support
-    implementation("androidx.webkit:webkit:1.11.0-alpha02") 
+    implementation("androidx.webkit:webkit:1.12.0") 
 
     // Room Database for Profiles
     val room_version = "2.6.1"
@@ -54,8 +54,9 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
 
-    // Coroutines
+    // Coroutines & Lifecycle
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
