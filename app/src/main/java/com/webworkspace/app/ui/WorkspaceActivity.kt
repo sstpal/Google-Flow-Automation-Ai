@@ -52,8 +52,8 @@ class WorkspaceActivity : AppCompatActivity() {
         const val EXTRA_DESKTOP_MODE = "desktop_mode"
         private const val FILE_CHOOSER_REQUEST_CODE = 1001
         
-        private const val DESKTOP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0"
-        private const val MOBILE_USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        private const val DESKTOP_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15"
+        private const val MOBILE_USER_AGENT = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,9 +99,9 @@ class WorkspaceActivity : AppCompatActivity() {
         
         container.addView(webView)
         
-        // Using Firefox User-Agent is the most reliable way to bypass Google's 'browser not secure' block in Android WebView
-        // because Google does not apply the Chrome-specific X-Requested-With header checks to Firefox.
-        safeMobileUserAgent = "Mozilla/5.0 (Android 14; Mobile; rv:109.0) Gecko/114.0 Firefox/114.0"
+        // Using an Apple iOS User-Agent is the ultimate bypass because Google's backend does not run the
+        // aggressive X-Requested-With or Android-specific discrepancy checks on iOS devices.
+        safeMobileUserAgent = MOBILE_USER_AGENT
         
         webView.settings.apply {
             javaScriptEnabled = true
@@ -140,6 +140,13 @@ class WorkspaceActivity : AppCompatActivity() {
             }
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 progressBar.visibility = View.VISIBLE
+                // Inject JS to perfectly spoof Apple WebKit environment, matching the UA
+                val platformStr = if (isDesktopMode) "MacIntel" else "iPhone"
+                val js = """
+                    Object.defineProperty(navigator, 'platform', {get: function() {return '$platformStr';}});
+                    Object.defineProperty(navigator, 'vendor', {get: function() {return 'Apple Computer, Inc.';}});
+                """.trimIndent()
+                view?.evaluateJavascript(js, null)
             }
             override fun onPageFinished(view: WebView?, url: String?) {
                 progressBar.visibility = View.GONE
