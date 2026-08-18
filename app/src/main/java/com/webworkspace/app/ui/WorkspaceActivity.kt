@@ -1,7 +1,5 @@
 package com.webworkspace.app.ui
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
@@ -25,21 +23,28 @@ class WorkspaceActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var btnDesktopToggle: ImageButton
     private lateinit var tvWorkspaceProfileName: TextView
-    
+
     private val database by lazy { AppDatabase.getDatabase(this) }
-    
+
     private var currentProfileId: Long = -1
     private var currentProfileName: String = ""
     private var targetUrl: String = ""
-    private var isDesktopMode: Boolean = true
 
     companion object {
         const val EXTRA_PROFILE_ID = "profile_id"
         const val EXTRA_PROFILE_NAME = "profile_name"
         const val EXTRA_TARGET_URL = "target_url"
         const val EXTRA_DESKTOP_MODE = "desktop_mode"
-        
-        private var geckoRuntime: GeckoRuntime? = null
+
+        private var sRuntime: GeckoRuntime? = null
+
+        @Synchronized
+        fun getRuntime(context: android.content.Context): GeckoRuntime {
+            if (sRuntime == null) {
+                sRuntime = GeckoRuntime.create(context.applicationContext)
+            }
+            return sRuntime!!
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +54,6 @@ class WorkspaceActivity : AppCompatActivity() {
         currentProfileId = intent.getLongExtra(EXTRA_PROFILE_ID, -1)
         currentProfileName = intent.getStringExtra(EXTRA_PROFILE_NAME) ?: "Default"
         targetUrl = intent.getStringExtra(EXTRA_TARGET_URL) ?: "https://labs.google/fx/tools/flow"
-        isDesktopMode = true // Force desktop mode as requested by user
 
         if (currentProfileId == -1L) {
             finish()
@@ -59,9 +63,9 @@ class WorkspaceActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         btnDesktopToggle = findViewById(R.id.btnDesktopToggle)
         tvWorkspaceProfileName = findViewById(R.id.tvWorkspaceProfileName)
-        
+
         tvWorkspaceProfileName.text = currentProfileName
-        
+
         setupToolbar()
         setupGeckoView()
     }
@@ -69,39 +73,24 @@ class WorkspaceActivity : AppCompatActivity() {
     private fun setupGeckoView() {
         val container = findViewById<android.widget.FrameLayout>(R.id.webViewContainer)
         container.removeAllViews()
-        
+
         geckoView = GeckoView(this)
         container.addView(geckoView)
-        
-        if (geckoRuntime == null) {
-            geckoRuntime = GeckoRuntime.getDefault(this)
-        }
 
-        // Context ID creates completely isolated cookie jars per profile
+        val runtime = getRuntime(this)
+
+        // contextId creates a completely isolated cookie/storage jar per profile
         val sessionSettings = GeckoSessionSettings.Builder()
-            .contextId(currentProfileName)
+            .usePrivateMode(false)
             .userAgentMode(GeckoSessionSettings.USER_AGENT_MODE_DESKTOP)
+            .viewportMode(GeckoSessionSettings.VIEWPORT_MODE_DESKTOP)
             .build()
-            
+
         geckoSession = GeckoSession(sessionSettings)
-        
-        geckoSession.progressDelegate = object : GeckoSession.ProgressDelegate {
-            override fun onPageStart(session: GeckoSession, url: String) {
-                progressBar.visibility = View.VISIBLE
-            }
-            override fun onPageStop(session: GeckoSession, success: Boolean) {
-                progressBar.visibility = View.GONE
-                updateProfileSessionStatus(true)
-                saveLastVisitedUrl(targetUrl) // Approximation for GeckoView URL tracking
-            }
-            override fun onProgressChange(session: GeckoSession, progress: Int) {
-                progressBar.progress = progress
-            }
-        }
-        
-        geckoSession.open(geckoRuntime!!)
+
+        geckoSession.open(runtime)
         geckoView.setSession(geckoSession)
-        
+
         geckoSession.loadUri(targetUrl)
     }
 
@@ -126,9 +115,9 @@ class WorkspaceActivity : AppCompatActivity() {
     private fun setupToolbar() {
         btnDesktopToggle.setImageResource(R.drawable.ic_desktop)
         btnDesktopToggle.setOnClickListener {
-            Toast.makeText(this, "Desktop mode is enforced globally for best features.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Desktop mode is always on for full features.", Toast.LENGTH_SHORT).show()
         }
-        
+
         findViewById<ImageButton>(R.id.btnReload).setOnClickListener {
             geckoSession.reload()
         }
@@ -140,6 +129,7 @@ class WorkspaceActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     override fun onBackPressed() {
         geckoSession.goBack()
     }
