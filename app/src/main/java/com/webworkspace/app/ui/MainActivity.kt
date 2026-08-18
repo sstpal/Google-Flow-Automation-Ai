@@ -78,6 +78,17 @@ class MainActivity : AppCompatActivity() {
                 adapter.submitList(profiles)
             }
         }
+
+        // Check for updates automatically in the background
+        lifecycleScope.launch {
+            try {
+                val pInfo = packageManager.getPackageInfo(packageName, 0)
+                val versionName = pInfo.versionName ?: "1.0"
+                com.webworkspace.app.updater.UpdateChecker.checkForUpdates(this@MainActivity, versionName)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     private fun showSettingsDialog() {

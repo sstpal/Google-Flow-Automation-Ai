@@ -7,6 +7,9 @@
     <!-- Necessary for file uploads / downloads via Storage Access Framework (SAF) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     
+    <!-- Permission to install updates from within the app -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- We don't request WRITE_EXTERNAL_STORAGE as we will use SAF / MediaStore for downloads on modern Android -->
 
     <application
