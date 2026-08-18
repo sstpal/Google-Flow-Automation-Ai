@@ -123,7 +123,8 @@ class WorkspaceActivity : AppCompatActivity() {
         }
 
         findViewById<ImageButton>(R.id.btnHome).setOnClickListener {
-            geckoSession.loadUri("https://labs.google/fx/tools/flow")
+            // Returns the user to the main app page (Dashboard with profiles)
+            finish()
         }
 
         findViewById<ImageButton>(R.id.btnReload).setOnClickListener {
@@ -139,6 +140,7 @@ class WorkspaceActivity : AppCompatActivity() {
 
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
-        geckoSession.goBack()
+        // Instead of getting trapped, hardware back button returns to Dashboard
+        finish()
     }
 }
