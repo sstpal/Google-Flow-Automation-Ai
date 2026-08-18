@@ -46,7 +46,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
     // GeckoView for ultimate browser engine
-    implementation("org.mozilla.geckoview:geckoview:114.0.20230608102324") // Using a widely available stable version
+    implementation("org.mozilla.geckoview:geckoview:153.0.20260810162159") // Using the latest available stable version
 
     // WebKit (kept for reference or removal later)
     implementation("androidx.webkit:webkit:1.12.0")
