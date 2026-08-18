@@ -52,6 +52,7 @@ class WorkspaceActivity : AppCompatActivity() {
         private const val FILE_CHOOSER_REQUEST_CODE = 1001
         
         private const val DESKTOP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        private const val MOBILE_USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,7 +61,7 @@ class WorkspaceActivity : AppCompatActivity() {
 
         currentProfileId = intent.getLongExtra(EXTRA_PROFILE_ID, -1)
         currentProfileName = intent.getStringExtra(EXTRA_PROFILE_NAME) ?: "Default"
-        targetUrl = intent.getStringExtra(EXTRA_TARGET_URL) ?: "https://flow.google.com"
+        targetUrl = intent.getStringExtra(EXTRA_TARGET_URL) ?: "https://labs.google/fx/tools/flow"
         isDesktopMode = intent.getBooleanExtra(EXTRA_DESKTOP_MODE, true)
 
         if (currentProfileId == -1L) {
@@ -109,6 +110,8 @@ class WorkspaceActivity : AppCompatActivity() {
             useWideViewPort = true
             loadWithOverviewMode = true
         }
+
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
 
         updateDesktopMode()
 
@@ -205,7 +208,7 @@ class WorkspaceActivity : AppCompatActivity() {
             webView.settings.userAgentString = DESKTOP_USER_AGENT
             btnDesktopToggle.setImageResource(R.drawable.ic_desktop)
         } else {
-            webView.settings.userAgentString = WebSettings.getDefaultUserAgent(this)
+            webView.settings.userAgentString = MOBILE_USER_AGENT
             btnDesktopToggle.setImageResource(R.drawable.ic_mobile)
         }
     }
