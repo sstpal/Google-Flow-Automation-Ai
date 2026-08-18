@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+  "name": "FlowMediaDownloader",
+  "version": "1.0",
+  "description": "Intercepts long-press on media to download them via the Android app.",
+  "permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "downloader@webworkspace.com"
+    }
+  }
+}

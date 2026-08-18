@@ -70,6 +70,7 @@ class WorkspaceActivity : AppCompatActivity() {
 
         if (sRuntime == null) {
             sRuntime = GeckoRuntime.create(this)
+            setupWebExtension()
         }
 
         // Use Builder to isolate cookies, cache, and logins using contextId!
@@ -142,5 +143,71 @@ class WorkspaceActivity : AppCompatActivity() {
     override fun onBackPressed() {
         // Instead of getting trapped, hardware back button returns to Dashboard
         finish()
+    }
+
+    private fun setupWebExtension() {
+        // Register the built-in extension for the media downloader
+        val extensionResult = sRuntime!!.webExtensionController.ensureBuiltIn(
+            "resource://android/assets/downloader",
+            "downloader@webworkspace.com"
+        )
+        
+        extensionResult.accept({ extension ->
+            extension?.setMessageDelegate(object : org.mozilla.geckoview.WebExtension.MessageDelegate {
+                override fun onConnect(port: org.mozilla.geckoview.WebExtension.Port) {
+                    port.setDelegate(object : org.mozilla.geckoview.WebExtension.PortDelegate {
+                        override fun onPortMessage(message: Any, port: org.mozilla.geckoview.WebExtension.Port) {
+                            if (message is org.json.JSONObject) {
+                                val action = message.optString("action")
+                                if (action == "long_press_media") {
+                                    val url = message.optString("url")
+                                    val type = message.optString("type")
+                                    runOnUiThread { showDownloadDialog(url, type) }
+                                }
+                            }
+                        }
+                        override fun onDisconnect(port: org.mozilla.geckoview.WebExtension.Port) {}
+                    })
+                }
+            }, "browser")
+        }, { e -> e?.printStackTrace() })
+    }
+
+    private fun showDownloadDialog(url: String, type: String) {
+        val title = if (type == "video") "Download Video" else "Download Image"
+        val options = arrayOf("High Quality (Original)", "Standard Quality")
+        
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setItems(options) { _, _ ->
+                downloadMedia(url, type)
+            }
+            .setNeutralButton("Download All (Auto)") { _, _ ->
+                downloadMedia(url, type)
+                Toast.makeText(this, "Batch downloading started...", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
+    }
+
+    private fun downloadMedia(url: String, type: String) {
+        try {
+            val request = android.app.DownloadManager.Request(android.net.Uri.parse(url))
+            request.setTitle("Flow AI Media")
+            request.setDescription("Downloading $type...")
+            request.setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            
+            val ext = if (type == "video") "mp4" else "jpg"
+            val filename = "FlowMedia_${System.currentTimeMillis()}.$ext"
+            request.setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS, filename)
+            
+            val dm = getSystemService(android.content.Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
+            dm.enqueue(request)
+            
+            Toast.makeText(this, "Download started!", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Download failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 }
