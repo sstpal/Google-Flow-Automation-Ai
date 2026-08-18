@@ -1,7 +1,6 @@
 package com.webworkspace.app.ui
 
 import android.os.Bundle
-import android.view.View
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -13,12 +12,13 @@ import com.webworkspace.app.data.AppDatabase
 import kotlinx.coroutines.launch
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.GeckoView
 
 class WorkspaceActivity : AppCompatActivity() {
 
     private lateinit var geckoView: GeckoView
-    private val geckoSession = GeckoSession()
+    private lateinit var geckoSession: GeckoSession
     private lateinit var progressBar: ProgressBar
     private lateinit var btnDesktopToggle: ImageButton
     private lateinit var tvWorkspaceProfileName: TextView
@@ -72,9 +72,31 @@ class WorkspaceActivity : AppCompatActivity() {
             sRuntime = GeckoRuntime.create(this)
         }
 
-        // Force desktop user agent
-        geckoSession.settings.userAgentMode = org.mozilla.geckoview.GeckoSessionSettings.USER_AGENT_MODE_DESKTOP
-        geckoSession.settings.viewportMode = org.mozilla.geckoview.GeckoSessionSettings.VIEWPORT_MODE_DESKTOP
+        // Use Builder to isolate cookies, cache, and logins using contextId!
+        // A unique contextId means this session gets its own completely isolated storage.
+        val settings = GeckoSessionSettings.Builder()
+            .usePrivateMode(false)
+            .userAgentMode(GeckoSessionSettings.USER_AGENT_MODE_DESKTOP)
+            .viewportMode(GeckoSessionSettings.VIEWPORT_MODE_DESKTOP)
+            .contextId("profile_$currentProfileId") // UNIQUE CONTEXT ID
+            .build()
+
+        geckoSession = GeckoSession(settings)
+
+        // Track URL changes to save the last visited project for the "Play" button
+        geckoSession.progressDelegate = object : GeckoSession.ProgressDelegate {
+            override fun onPageStart(session: GeckoSession, url: String) {
+                saveLastVisitedUrl(url)
+            }
+            override fun onPageStop(session: GeckoSession, success: Boolean) {
+                // Done loading
+            }
+            override fun onProgressChange(session: GeckoSession, progress: Int) {
+                // Update progress bar
+            }
+            override fun onSecurityChange(session: GeckoSession, securityInfo: GeckoSession.ProgressDelegate.SecurityInformation) {
+            }
+        }
 
         geckoSession.open(sRuntime!!)
         geckoView.setSession(geckoSession)
@@ -82,20 +104,14 @@ class WorkspaceActivity : AppCompatActivity() {
         geckoSession.loadUri(targetUrl)
     }
 
-    private fun updateProfileSessionStatus(hasSession: Boolean) {
-        lifecycleScope.launch {
-            val profile = database.profileDao().getProfileById(currentProfileId)
-            if (profile != null && profile.hasSession != hasSession) {
-                database.profileDao().updateProfile(profile.copy(hasSession = hasSession))
-            }
-        }
-    }
-
     private fun saveLastVisitedUrl(url: String) {
-        lifecycleScope.launch {
-            val profile = database.profileDao().getProfileById(currentProfileId)
-            if (profile != null && profile.lastVisitedUrl != url) {
-                database.profileDao().updateProfile(profile.copy(lastVisitedUrl = url))
+        // Only save valid URLs that the user is visiting
+        if (url.startsWith("http")) {
+            lifecycleScope.launch {
+                val profile = database.profileDao().getProfileById(currentProfileId)
+                if (profile != null && profile.lastVisitedUrl != url) {
+                    database.profileDao().updateProfile(profile.copy(lastVisitedUrl = url))
+                }
             }
         }
     }
