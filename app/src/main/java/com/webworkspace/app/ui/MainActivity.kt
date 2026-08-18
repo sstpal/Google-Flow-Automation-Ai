@@ -14,6 +14,7 @@ import com.webworkspace.app.R
 import com.webworkspace.app.data.AppDatabase
 import com.webworkspace.app.data.Profile
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -25,22 +26,33 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_settings -> {
+                    showSettingsDialog()
+                    true
+                }
+                else -> false
+            }
+        }
+
         val recyclerView = findViewById<RecyclerView>(R.id.profilesRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         
         adapter = ProfileAdapter(
             onPlayClick = { profile ->
                 // Play -> Resume last visited URL or open Flow default
-                val url = profile.lastVisitedUrl ?: "https://flow.google.com/"
+                val url = profile.lastVisitedUrl ?: "https://labs.google/fx/tools/flow"
                 openWorkspace(profile, url, true)
             },
             onNewSessionClick = { profile ->
-                // New Session -> Force open a new Flow project
-                openWorkspace(profile, "https://flow.google.com/new", true)
+                // New Session -> Force open a new Flow project dashboard
+                openWorkspace(profile, "https://labs.google/fx/tools/flow", true)
             },
             onCustomizeClick = { profile ->
-                // Customization -> Opens Google accounts login
-                openWorkspace(profile, "https://accounts.google.com/", false)
+                // Customization -> Opens Google accounts login/profile
+                openWorkspace(profile, "https://myaccount.google.com/", false)
             },
             onDeleteClick = { profile ->
                 MaterialAlertDialogBuilder(this)
@@ -66,6 +78,32 @@ class MainActivity : AppCompatActivity() {
                 adapter.submitList(profiles)
             }
         }
+    }
+
+    private fun showSettingsDialog() {
+        val options = arrayOf("Clear Global Web Cache & Cookies", "Delete All Profiles")
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.action_settings)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        android.webkit.WebStorage.getInstance().deleteAllData()
+                        android.webkit.CookieManager.getInstance().removeAllCookies(null)
+                        android.webkit.CookieManager.getInstance().flush()
+                        android.widget.Toast.makeText(this, "Cache and Global Cookies Cleared.", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> {
+                        lifecycleScope.launch {
+                            database.profileDao().getAllProfiles().first().forEach { profile ->
+                                database.profileDao().deleteProfile(profile)
+                            }
+                            android.widget.Toast.makeText(this@MainActivity, "All profiles deleted.", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
     private fun showAddProfileDialog() {
