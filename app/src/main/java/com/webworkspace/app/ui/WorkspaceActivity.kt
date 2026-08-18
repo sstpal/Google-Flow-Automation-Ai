@@ -14,7 +14,6 @@ import com.webworkspace.app.R
 import com.webworkspace.app.data.AppDatabase
 import kotlinx.coroutines.launch
 import org.mozilla.geckoview.GeckoRuntime
-import org.mozilla.geckoview.GeckoRuntimeSettings
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.GeckoView
@@ -75,9 +74,7 @@ class WorkspaceActivity : AppCompatActivity() {
         container.addView(geckoView)
         
         if (geckoRuntime == null) {
-            val settings = GeckoRuntimeSettings.Builder()
-                .build()
-            geckoRuntime = GeckoRuntime.create(this, settings)
+            geckoRuntime = GeckoRuntime.getDefault(this)
         }
 
         // Context ID creates completely isolated cookie jars per profile
@@ -89,7 +86,7 @@ class WorkspaceActivity : AppCompatActivity() {
         geckoSession = GeckoSession(sessionSettings)
         
         geckoSession.progressDelegate = object : GeckoSession.ProgressDelegate {
-            override fun onPageStart(session: GeckoSession, url: String) {
+            override fun onPageStart(session: GeckoSession, url: String?) {
                 progressBar.visibility = View.VISIBLE
             }
             override fun onPageStop(session: GeckoSession, success: Boolean) {
